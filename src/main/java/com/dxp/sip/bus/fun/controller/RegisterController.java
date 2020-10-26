@@ -84,7 +84,7 @@ public final class RegisterController extends AbstractMsgProcessor {
             defaultSessionBuilder.status(Session.Status.CONNECTED);
             defaultSessionBuilder.ctx(channel);
             SipSession sipSession =new SipSession(defaultSessionBuilder);
-            DefaultSessionRegister defaultSessionRegister=new DefaultSessionRegister();
+            DefaultSessionRegister defaultSessionRegister=DefaultSessionRegister.getInstance();
             defaultSessionRegister.put(toURI, sipSession);
             //2.根据sipaor查询用户名密码去数据库查询
             /* if the user name exists, reply ambiguous */

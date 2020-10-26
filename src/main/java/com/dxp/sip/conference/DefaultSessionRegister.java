@@ -1,5 +1,6 @@
 package com.dxp.sip.conference;
 
+import com.dxp.sip.bus.fun.DispatchHandlerContext;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DefaultSessionRegister {
 
+    private static DefaultSessionRegister instance;
     private final int clean_delay_time = 30 * 1000;
 
     private ScheduledExecutorService scheduledExecutorService;
@@ -91,5 +93,30 @@ public class DefaultSessionRegister {
 
 
         }
+    }
+
+    public static DefaultSessionRegister getInstance() {
+
+//先检查实例是否存在，如果不存在才进入下面的同步块
+
+        if (instance == null) {
+
+//同步块，线程安全的创建实例
+
+            synchronized (DispatchHandlerContext.class) {
+
+//再次检查实例是否存在，如果不存在才真的创建实例
+
+                if (instance == null) {
+
+                    instance = new DefaultSessionRegister();
+
+                }
+
+            }
+
+        }
+
+        return instance;
     }
 }
