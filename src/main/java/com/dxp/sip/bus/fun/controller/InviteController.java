@@ -49,8 +49,12 @@ public class InviteController extends AbstractMsgProcessor {
                 SendErrorResponseUtil.err404(request, channel.channel(), "not found!");
                 return;
             }
-            /*send try to the invitor */
+            /*send try to the invitor 不能马上发送，需要等到被邀请B返回才能发送 （A邀请B） */
             else {
+
+                //判断是B返回的请求
+                Boolean isRetFromBClient=Boolean.FALSE;
+
                 DefaultFullSipResponse responseTrying = new DefaultFullSipResponse(SipResponseStatus.TRYING);
                 responseTrying.setRecipient(request.recipient());
                 AbstractSipHeaders h_try = responseTrying.headers();
