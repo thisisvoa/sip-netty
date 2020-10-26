@@ -3,6 +3,7 @@ package com.dxp.sip.bus.fun;
 import com.dxp.sip.codec.sip.FullSipRequest;
 import com.dxp.sip.codec.sip.SipMethod;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import kotlin.jvm.Throws;
 import org.dom4j.DocumentException;
 
@@ -22,5 +23,5 @@ public interface HandlerController<T> {
      * @throws DocumentException 解析XML失败.
      */
 
-    void handler(FullSipRequest request, Channel channel) throws DocumentException;
+    void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException;
 }

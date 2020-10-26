@@ -42,7 +42,7 @@ protected void channelRead0(  ChannelHandlerContext ctx,   FullSipRequest msg) t
         }
 
         // 异步执行
-        DispatchHandler.instance().handler(msg, ctx.channel());
+        DispatchHandler.instance().handler(msg, ctx);
     }
 
 

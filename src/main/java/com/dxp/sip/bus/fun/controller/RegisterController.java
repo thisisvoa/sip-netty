@@ -2,18 +2,15 @@ package com.dxp.sip.bus.fun.controller;
 
 import com.dxp.sip.bus.fun.AbstractMsgProcessor;
 import com.dxp.sip.bus.fun.DispatchHandlerContext;
-import com.dxp.sip.bus.fun.HandlerController;
-import com.dxp.sip.bus.handler.SipResponseHandler;
 import com.dxp.sip.codec.sip.*;
 import com.dxp.sip.conference.*;
 import com.dxp.sip.util.CharsetUtils;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.dom4j.DocumentException;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +39,7 @@ public final class RegisterController extends AbstractMsgProcessor {
      * @throws DocumentException 解析XML失败.
      */
     @Override
-    public void handler(FullSipRequest request, Channel channel) throws DocumentException {
+    public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
         AbstractSipHeaders headers = request.headers();
         DefaultFullSipResponse response =new  DefaultFullSipResponse(SipResponseStatus.UNAUTHORIZED);
         response.setRecipient(request.recipient());
@@ -81,13 +78,14 @@ public final class RegisterController extends AbstractMsgProcessor {
             SipContactAOR contactAOR = new SipContactAOR(contactURI);
             contactAOR.attachTo(new SipAOR(toURI));
 
-            DefaultSession.DefaultSessionBuilder defaultSessionBuilder=new DefaultSession.DefaultSessionBuilder();
+            SipSession.DefaultSessionBuilder defaultSessionBuilder=new SipSession.DefaultSessionBuilder();
             defaultSessionBuilder.build();
             defaultSessionBuilder.sipContactAOR = contactAOR;
             defaultSessionBuilder.status(Session.Status.CONNECTED);
-            DefaultSession defaultSession=new DefaultSession(defaultSessionBuilder);
+            defaultSessionBuilder.ctx(channel);
+            SipSession sipSession =new SipSession(defaultSessionBuilder);
             DefaultSessionRegister defaultSessionRegister=new DefaultSessionRegister();
-            defaultSessionRegister.put(toURI,defaultSession);
+            defaultSessionRegister.put(toURI, sipSession);
             //2.根据sipaor查询用户名密码去数据库查询
             /* if the user name exists, reply ambiguous */
 

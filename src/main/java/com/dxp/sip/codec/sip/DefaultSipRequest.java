@@ -1,6 +1,6 @@
 package com.dxp.sip.codec.sip;
 
-import com.dxp.sip.conference.DefaultSession;
+import com.dxp.sip.conference.SipSession;
 
 import java.net.InetSocketAddress;
 
@@ -14,7 +14,7 @@ public class DefaultSipRequest extends DefaultSipMessage implements SipRequest {
     private SipMethod method;
     private String uri;
 
-    private DefaultSession defaultSession;
+    private SipSession sipSession;
     /**
      * Creates a new instance.
      *
@@ -125,12 +125,12 @@ public class DefaultSipRequest extends DefaultSipMessage implements SipRequest {
                 super.equals(o);
     }
 
-    public DefaultSession getDefaultSession() {
-        return defaultSession;
+    public SipSession getSipSession() {
+        return sipSession;
     }
 
-    public void setDefaultSession(DefaultSession defaultSession) {
-        this.defaultSession = defaultSession;
+    public void setSipSession(SipSession sipSession) {
+        this.sipSession = sipSession;
     }
 
     @Override

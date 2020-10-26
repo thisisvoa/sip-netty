@@ -4,6 +4,7 @@ import com.dxp.sip.codec.sip.FullSipRequest;
 import com.dxp.sip.codec.sip.SipMethod;
 import com.dxp.sip.util.SendErrorResponseUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -22,7 +23,7 @@ public final class DispatchHandler {
      */
     private EventLoopGroup   loopGroup = new DefaultEventLoopGroup(new DefaultThreadFactory("dis-han"));
 
-    public final void handler(FullSipRequest request, Channel channel) {
+    public final void handler(FullSipRequest request, ChannelHandlerContext channel) {
         request.retain();
         loopGroup.submit(new Runnable() {
             @Override
@@ -32,20 +33,21 @@ public final class DispatchHandler {
         }) ;
     }
 
-    private final void handler0(FullSipRequest request, Channel channel) {
+    private final void handler0(FullSipRequest request, ChannelHandlerContext channel) {
+        Channel channel1 = channel.channel();
         try {
             SipMethod method = request.method();
 
             HandlerController controller = DispatchHandlerContext.getInstance().method(method);
             if (controller == null) {
-                SendErrorResponseUtil.err405(request, channel);
+                SendErrorResponseUtil.err405(request, channel1);
             } else {
                 controller.handler(request, channel);
             }
         } catch (  DocumentException e) {
-            SendErrorResponseUtil.err400(request, channel, "xml err");
+            SendErrorResponseUtil.err400(request, channel1, "xml err");
         } catch ( Exception e) {
-            SendErrorResponseUtil.err500(request, channel, e.getMessage());
+            SendErrorResponseUtil.err500(request, channel1, e.getMessage());
         } finally {
             request.release();
         }

@@ -6,6 +6,7 @@ import com.dxp.sip.codec.sip.*;
 import com.dxp.sip.util.CharsetUtils;
 import com.dxp.sip.util.SendErrorResponseUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.dom4j.Document;
@@ -25,20 +26,21 @@ public final class MessageController extends AbstractMsgProcessor {
     }
 
 
-    public void handler(FullSipRequest request, Channel channel) throws DocumentException {
+    public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
         AbstractSipHeaders headers = request.headers();
         String type = headers.get(SipHeaderNames.CONTENT_TYPE);
+        Channel channel1 = channel.channel();
         if (SipHeaderValues.APPLICATION_MANSCDP_XML.contentEqualsIgnoreCase(type)) {
             String xml = request.content().toString(CharsetUtils.GB_2313);
             Document document = DocumentHelper.parseText(xml);
             String cmdType = document.getRootElement().element("CmdType").getTextTrim();
             if ("Keepalive".equalsIgnoreCase(cmdType)) {
-                keepalive(request, channel);
+                keepalive(request, channel1);
             } else {
-                SendErrorResponseUtil.err400(request, channel, "cmdType not allowed.");
+                SendErrorResponseUtil.err400(request, channel1, "cmdType not allowed.");
             }
         } else {
-            SendErrorResponseUtil.err400(request, channel, "message content_type must be Application/MANSCDP+xml");
+            SendErrorResponseUtil.err400(request, channel1, "message content_type must be Application/MANSCDP+xml");
         }
     }
 

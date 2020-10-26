@@ -1,6 +1,7 @@
 package com.dxp.sip.conference;
 
 import com.dxp.sip.codec.sip.FullSipRequest;
+import io.netty.channel.ChannelHandlerContext;
 
 public interface Session {
 
@@ -27,5 +28,9 @@ public interface Session {
     void close();
 
     boolean isConnected();
+
+    void setCtx(ChannelHandlerContext ctx);
+
+    ChannelHandlerContext getCtx();
 
 }

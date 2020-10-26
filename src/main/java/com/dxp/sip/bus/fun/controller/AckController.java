@@ -6,6 +6,7 @@ import com.dxp.sip.codec.sip.*;
 import com.dxp.sip.util.CharsetUtils;
 import com.dxp.sip.util.SendErrorResponseUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.dom4j.DocumentException;
@@ -28,7 +29,7 @@ public class AckController extends AbstractMsgProcessor {
          * @throws DocumentException 解析XML失败.
          */
         @Override
-        public void handler(FullSipRequest request, Channel channel) throws DocumentException {
+        public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
             AbstractSipHeaders headers = request.headers();
             String type = headers.get(SipHeaderNames.CONTENT_TYPE);
 
@@ -44,7 +45,7 @@ public class AckController extends AbstractMsgProcessor {
                         .set(SipHeaderNames.CONTACT, "")
                         .set(SipHeaderNames.CONTENT_LENGTH, SipHeaderValues.EMPTY_CONTENT_LENGTH);
 
-                channel.writeAndFlush(response);
+                channel.channel().writeAndFlush(response);
 
 
 

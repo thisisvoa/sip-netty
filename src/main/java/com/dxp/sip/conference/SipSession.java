@@ -4,15 +4,18 @@ import com.dxp.sip.bus.fun.DispatchHandler;
 import com.dxp.sip.codec.sip.FullSipRequest;
 import com.dxp.sip.util.SimpleUniqueIdGenerator;
 import com.dxp.sip.util.UniqueIDGeneratorService;
+import io.netty.channel.ChannelHandlerContext;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultSession implements Session {
+public class SipSession implements Session {
 
     public SipContactAOR sipContactAOR;
 
     protected final Object id;
+
+    private ChannelHandlerContext ctx;
 
     protected final long creationTime;
 
@@ -24,7 +27,7 @@ public class DefaultSession implements Session {
 
     protected  DispatchHandler eventDispatcher;
 
-    public DefaultSession(DefaultSessionBuilder sessionBuilder) {
+    public SipSession(DefaultSessionBuilder sessionBuilder) {
         sessionBuilder.validateAndSetValues();
         this.id= sessionBuilder.id;
         this.sipContactAOR = sessionBuilder.sipContactAOR;
@@ -45,6 +48,8 @@ public class DefaultSession implements Session {
 
         public SipContactAOR sipContactAOR;
 
+        public ChannelHandlerContext ctx;
+
         protected long creationTime = 0L;
 
         protected Status status;
@@ -52,9 +57,9 @@ public class DefaultSession implements Session {
         protected  DispatchHandler eventDispatcher;
 
 
-        public DefaultSession build()
+        public SipSession build()
         {
-            return new DefaultSession(this);
+            return new SipSession(this);
         }
 
 
@@ -87,7 +92,11 @@ public class DefaultSession implements Session {
             this.id = id;
             return this;
         }
-
+        public DefaultSessionBuilder ctx(final ChannelHandlerContext ctx)
+        {
+            this.ctx = ctx;
+            return this;
+        }
         public DefaultSessionBuilder sessionAttributes(final Map<String, Object> sessionAttributes)
         {
             this.sessionAttributes = sessionAttributes;
@@ -157,6 +166,16 @@ public class DefaultSession implements Session {
     @Override
     public boolean isConnected() {
         return false;
+    }
+
+    @Override
+    public void setCtx(ChannelHandlerContext ctx) {
+
+    }
+
+    @Override
+    public ChannelHandlerContext getCtx() {
+        return null;
     }
 
     public SipContactAOR getSipContactAOR() {

@@ -2,13 +2,11 @@ package com.dxp.sip.bus.fun.controller;
 
 import com.dxp.sip.bus.fun.AbstractMsgProcessor;
 import com.dxp.sip.bus.fun.DispatchHandlerContext;
-import com.dxp.sip.bus.fun.HandlerController;
 import com.dxp.sip.codec.sip.*;
-import com.dxp.sip.conference.DefaultSession;
 import com.dxp.sip.conference.SipContactAOR;
-import com.dxp.sip.util.CharsetUtils;
 import com.dxp.sip.util.SendErrorResponseUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.dom4j.DocumentException;
@@ -38,7 +36,7 @@ public class InviteController extends AbstractMsgProcessor {
          * @throws DocumentException 解析XML失败.
          */
         @Override
-        public void handler(FullSipRequest request, Channel channel) throws DocumentException {
+        public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
             AbstractSipHeaders headers = request.headers();
 
             String toURI = replaceStr(headers.get(SipHeaderNames.TO));
@@ -46,13 +44,9 @@ public class InviteController extends AbstractMsgProcessor {
             LOGGER.info("invite toURI : {}", toURI);
 
             SipContactAOR contactAOR = DispatchHandlerContext.getInstance().getContactMap().get(toURI);
-            DefaultSession.DefaultSessionBuilder defaultSessionBuilder=new DefaultSession.DefaultSessionBuilder();
-
-            defaultSessionBuilder.build();
-            DefaultSession defaultSession=new DefaultSession(defaultSessionBuilder);
             /* no such user, reply not-found */
             if (null == contactAOR) {
-                SendErrorResponseUtil.err404(request, channel, "not found!");
+                SendErrorResponseUtil.err404(request, channel.channel(), "not found!");
                 return;
             }
             /*send try to the invitor */

@@ -16,7 +16,7 @@ public class DefaultSessionRegister {
 
     private ScheduledExecutorService scheduledExecutorService;
 
-    private final Map<String,DefaultSession> defaultSessionMap;
+    private final Map<String, SipSession> defaultSessionMap;
 
     private final Map<Integer, String> dynamic_id_map;
 
@@ -31,14 +31,14 @@ public class DefaultSessionRegister {
     }
 
 
-    public DefaultSession getSession(String mac)
+    public SipSession getSession(String mac)
     {
         if (StringUtils.isEmpty(mac))
             return null;
 
         return defaultSessionMap.get(mac);
     }
-    public Integer put(String uri, DefaultSession session)
+    public Integer put(String uri, SipSession session)
     {
         defaultSessionMap.put(uri,session);
         if (  listeners.size() > 0)
@@ -65,7 +65,7 @@ public class DefaultSessionRegister {
         if ("" == uri)
             return;
 
-        DefaultSession session = defaultSessionMap.remove(uri);
+        SipSession session = defaultSessionMap.remove(uri);
         if (session == null)
             return;
         if (listeners.size() > 0)
@@ -81,8 +81,8 @@ public class DefaultSessionRegister {
         public void run()
         {
             long currentTime = System.currentTimeMillis();
-            DefaultSession session;
-            for (Map.Entry<String, DefaultSession> entry : defaultSessionMap.entrySet())
+            SipSession session;
+            for (Map.Entry<String, SipSession> entry : defaultSessionMap.entrySet())
             {
                 session = entry.getValue();
                 if (session.getExpireTime() < currentTime)
