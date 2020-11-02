@@ -21,10 +21,6 @@ public class DispatchHandlerContext {
 
     private static final ConcurrentHashMap<SipMethod, HandlerController> CONTROLLER_MAP = new ConcurrentHashMap(256);
     private static String ALLOW_METHOD = "";
-    /**
-     * SipContactAOR联系人用户，key为sip：213@192.168.30.11
-     */
-    private ConcurrentHashMap<String, SipContactAOR> contactMap = new ConcurrentHashMap<>();
 
 
     private DispatchHandlerContext() {
@@ -96,11 +92,4 @@ public class DispatchHandlerContext {
         return instance;
     }
 
-    public ConcurrentHashMap<String, SipContactAOR> getContactMap() {
-        return contactMap;
-    }
-
-    public void setContactMap(ConcurrentHashMap<String, SipContactAOR> contactMap) {
-        this.contactMap = contactMap;
-    }
-}
+   }

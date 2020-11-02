@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class DefaultSessionRegister {
 
     private static DefaultSessionRegister instance;
-    private final int clean_delay_time = 30 * 1000;
+    private final int clean_delay_time = 300 * 1000;
 
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -33,12 +33,12 @@ public class DefaultSessionRegister {
     }
 
 
-    public SipSession getSession(String mac)
+    public SipSession getSession(String userName)
     {
-        if (StringUtils.isEmpty(mac))
+        if (StringUtils.isEmpty(userName))
             return null;
 
-        return defaultSessionMap.get(mac);
+        return defaultSessionMap.get(userName);
     }
     public Integer put(String uri, SipSession session)
     {
@@ -88,7 +88,7 @@ public class DefaultSessionRegister {
             {
                 session = entry.getValue();
                 if (session.getExpireTime() < currentTime)
-                    remove("mac");
+                    remove(session.getUserName());
             }
 
 

@@ -47,7 +47,38 @@ public class SipContactAOR {
     public String toString() {
         return "sip:" + userName + "@" + address + ":" + port;
     }
-    
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public SipAOR getSipAOR() {
+        return sipAOR;
+    }
+
+    public void setSipAOR(SipAOR sipAOR) {
+        this.sipAOR = sipAOR;
+    }
 }
 
 

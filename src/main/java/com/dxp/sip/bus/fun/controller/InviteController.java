@@ -3,14 +3,20 @@ package com.dxp.sip.bus.fun.controller;
 import com.dxp.sip.bus.fun.AbstractMsgProcessor;
 import com.dxp.sip.bus.fun.DispatchHandlerContext;
 import com.dxp.sip.codec.sip.*;
+import com.dxp.sip.conference.DefaultSessionRegister;
 import com.dxp.sip.conference.SipContactAOR;
+import com.dxp.sip.conference.SipSession;
 import com.dxp.sip.util.SendErrorResponseUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import org.apache.commons.beanutils.BeanUtils;
 import org.dom4j.DocumentException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,27 +45,26 @@ public class InviteController extends AbstractMsgProcessor {
         public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
             AbstractSipHeaders headers = request.headers();
 
-            String toURI = replaceStr(headers.get(SipHeaderNames.TO));
+            String to_str = headers.get(SipHeaderNames.TO);
+            String toURI = replaceStr(to_str);
 
             LOGGER.info("invite toURI : {}", toURI);
 
-            SipContactAOR contactAOR = DispatchHandlerContext.getInstance().getContactMap().get(toURI);
+            DefaultSessionRegister defaultSessionRegister = DefaultSessionRegister.getInstance();
+            String username_str = getStr(toURI);
+            SipSession sipSession = defaultSessionRegister.getSession(username_str);
             /* no such user, reply not-found */
-            if (null == contactAOR) {
+            if (null == sipSession) {
                 SendErrorResponseUtil.err404(request, channel.channel(), "not found!");
                 return;
             }
-            /*send try to the invitor 不能马上发送，需要等到被邀请B返回才能发送 （A邀请B） */
+            /*send try to the invitor  */
             else {
-
-                //判断是B返回的请求
-                Boolean isRetFromBClient=Boolean.FALSE;
-
                 DefaultFullSipResponse responseTrying = new DefaultFullSipResponse(SipResponseStatus.TRYING);
                 responseTrying.setRecipient(request.recipient());
                 AbstractSipHeaders h_try = responseTrying.headers();
                 h_try.set(SipHeaderNames.VIA, headers.get(SipHeaderNames.VIA));
-                String s = "<" + contactAOR + ">";
+                String s = "<" + toURI + ">";
                 h_try.set(SipHeaderNames.FROM, headers.get(SipHeaderNames.FROM))
                         .set(SipHeaderNames.TO, s + ";tag=" + System.currentTimeMillis())
                         .set(SipHeaderNames.CSEQ, headers.get(SipHeaderNames.CSEQ))
@@ -68,14 +73,35 @@ public class InviteController extends AbstractMsgProcessor {
                         .set(SipHeaderNames.CONTENT_LENGTH, SipHeaderValues.EMPTY_CONTENT_LENGTH);
 
                 channel.writeAndFlush(responseTrying);
+            }
+            /* forward it to the invitee */
+
+            SipSession _sipSession = defaultSessionRegister.getSession(username_str);
+
+           // request.setUri(contactAOR.toString());
 
 
+            SipRequest inviteRequest = new DefaultFullSipRequest(SipVersion.SIP_2_0, SipMethod.INVITE, "");
 
+            try {
+                BeanUtils.copyProperties(inviteRequest,request);
+                request.setRecipient(sipSession.getDeviceAddress());
+                inviteRequest.setRecipient(sipSession.getDeviceAddress());
+                sipSession.getCtx().writeAndFlush(request);
+             //   sipSession.getCtx().writeAndFlush(inviteRequest);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
 
-            /* forward it to the invitee */
-            request.setUri(contactAOR.toString());
-            channel.write(request);
+
+
+            //判断是B返回的请求
+            Boolean isRetFromBClient = Boolean.FALSE;
+
+
+
         }
 
     private String replaceStr(String str){
@@ -84,7 +110,14 @@ public class InviteController extends AbstractMsgProcessor {
         return matcher.replaceAll("");
     }
 
-
+    private String getStr(String str){
+        Pattern pattern = Pattern.compile(":(.*?)@");
+        Matcher matcher = pattern.matcher(str);
+        while(matcher.find()){
+            return matcher.group(1);
+        }
+        return "";
+    }
 
 
 }

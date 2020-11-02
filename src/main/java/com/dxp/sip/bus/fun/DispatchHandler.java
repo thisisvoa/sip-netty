@@ -33,21 +33,21 @@ public final class DispatchHandler {
         }) ;
     }
 
-    private final void handler0(FullSipRequest request, ChannelHandlerContext channel) {
-        Channel channel1 = channel.channel();
+    private final void handler0(FullSipRequest request, ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
         try {
             SipMethod method = request.method();
 
             HandlerController controller = DispatchHandlerContext.getInstance().method(method);
             if (controller == null) {
-                SendErrorResponseUtil.err405(request, channel1);
+                SendErrorResponseUtil.err405(request, channel);
             } else {
-                controller.handler(request, channel);
+                controller.handler(request, ctx);
             }
         } catch (  DocumentException e) {
-            SendErrorResponseUtil.err400(request, channel1, "xml err");
+            SendErrorResponseUtil.err400(request, channel, "xml err");
         } catch ( Exception e) {
-            SendErrorResponseUtil.err500(request, channel1, e.getMessage());
+            SendErrorResponseUtil.err500(request, channel, e.getMessage());
         } finally {
             request.release();
         }

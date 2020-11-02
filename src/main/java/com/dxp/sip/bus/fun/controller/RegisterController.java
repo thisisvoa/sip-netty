@@ -35,11 +35,11 @@ public final class RegisterController extends AbstractMsgProcessor {
      * 处理具体的 sip 请求
      *
      * @param request 请求携带的信息.
-     * @param channel 通道
+     * @param ctx 通道
      * @throws DocumentException 解析XML失败.
      */
     @Override
-    public void handler(FullSipRequest request, ChannelHandlerContext channel) throws DocumentException {
+    public void handler(FullSipRequest request, ChannelHandlerContext ctx) throws DocumentException {
         AbstractSipHeaders headers = request.headers();
         DefaultFullSipResponse response =new  DefaultFullSipResponse(SipResponseStatus.UNAUTHORIZED);
         response.setRecipient(request.recipient());
@@ -62,7 +62,7 @@ public final class RegisterController extends AbstractMsgProcessor {
             //1. 先查询expires是否过期，过期删除联系人
             SipMessage sipMessage = request;
             String toURI = replaceStr(headers.get(SipHeaderNames.TO));
-            ConcurrentHashMap<String, SipContactAOR> contactMap = DispatchHandlerContext.getInstance().getContactMap();
+
             String expires = headers.get(SipHeaderNames.EXPIRES);
             int _expires=-1;
             if(null != expires){
@@ -72,7 +72,7 @@ public final class RegisterController extends AbstractMsgProcessor {
             }
             if(_expires<=0){
                 String key = sipMessage.recipient().toString();
-                contactMap.remove(key);
+
             }
             String contactURI =replaceStr(sipMessage.headers().get(SipHeaderNames.CONTACT)).split(";")[0];
             SipContactAOR contactAOR = new SipContactAOR(contactURI);
@@ -81,23 +81,27 @@ public final class RegisterController extends AbstractMsgProcessor {
             SipSession.DefaultSessionBuilder defaultSessionBuilder=new SipSession.DefaultSessionBuilder();
             defaultSessionBuilder.build();
             defaultSessionBuilder.sipContactAOR = contactAOR;
+            defaultSessionBuilder.userName(contactAOR.getUserName());
             defaultSessionBuilder.status(Session.Status.CONNECTED);
-            defaultSessionBuilder.ctx(channel);
+            defaultSessionBuilder.ctx(ctx.channel());
+
+            defaultSessionBuilder.deviceAddress(request.recipient());
             SipSession sipSession =new SipSession(defaultSessionBuilder);
+            sipSession.setExpireTime(_expires*1000+System.currentTimeMillis());
             DefaultSessionRegister defaultSessionRegister=DefaultSessionRegister.getInstance();
-            defaultSessionRegister.put(toURI, sipSession);
+            defaultSessionRegister.put(contactAOR.getUserName(), sipSession);
             //2.根据sipaor查询用户名密码去数据库查询
             /* if the user name exists, reply ambiguous */
 
 
 
-            //3.设置to到map中
-            contactMap.put(toURI,contactAOR);
+
 
         ok_method(headers, response, h);
         LOGGER.info("Response Sent: {}", response.content().toString(CharsetUtils.US_ASCII));
 
-        channel.writeAndFlush(response);
+        ctx.channel().writeAndFlush(response);
+
     }
 
     private void ok_method(AbstractSipHeaders headers, DefaultFullSipResponse response, AbstractSipHeaders h) {

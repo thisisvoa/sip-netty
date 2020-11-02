@@ -4,18 +4,24 @@ import com.dxp.sip.bus.fun.DispatchHandler;
 import com.dxp.sip.codec.sip.FullSipRequest;
 import com.dxp.sip.util.SimpleUniqueIdGenerator;
 import com.dxp.sip.util.UniqueIDGeneratorService;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SipSession implements Session {
 
+    private String userName;//唯一用户名
+
     public SipContactAOR sipContactAOR;
+
+    private final InetSocketAddress deviceAddress;
 
     protected final Object id;
 
-    private ChannelHandlerContext ctx;
+    public Channel ctx;
 
     protected final long creationTime;
 
@@ -34,6 +40,9 @@ public class SipSession implements Session {
         this.creationTime = sessionBuilder.creationTime;
         this.status = sessionBuilder.status;
         this.sessionAttributes = sessionBuilder.sessionAttributes;
+        this.ctx= sessionBuilder.ctx;
+        this.deviceAddress= sessionBuilder.deviceAddress;
+        this.userName = sessionBuilder.userName;
     }
 
 
@@ -42,13 +51,16 @@ public class SipSession implements Session {
 
         protected static final UniqueIDGeneratorService ID_GENERATOR_SERVICE = new SimpleUniqueIdGenerator();
         protected Object id = null;
+        private String userName;
         protected DispatchHandler dispatchHandler =null;
 
         protected Map<String, Object> sessionAttributes = null;
 
+        private   InetSocketAddress deviceAddress;
+
         public SipContactAOR sipContactAOR;
 
-        public ChannelHandlerContext ctx;
+        public Channel ctx;
 
         protected long creationTime = 0L;
 
@@ -92,11 +104,17 @@ public class SipSession implements Session {
             this.id = id;
             return this;
         }
-        public DefaultSessionBuilder ctx(final ChannelHandlerContext ctx)
+        public DefaultSessionBuilder ctx(final Channel ctx)
         {
             this.ctx = ctx;
             return this;
         }
+        public DefaultSessionBuilder deviceAddress(final InetSocketAddress deviceAddress)
+        {
+            this.deviceAddress = deviceAddress;
+            return this;
+        }
+
         public DefaultSessionBuilder sessionAttributes(final Map<String, Object> sessionAttributes)
         {
             this.sessionAttributes = sessionAttributes;
@@ -105,6 +123,11 @@ public class SipSession implements Session {
         public DefaultSessionBuilder creationTime(long creationTime)
         {
             this.creationTime = creationTime;
+            return this;
+        }
+        public DefaultSessionBuilder userName(String userName)
+        {
+            this.userName = userName;
             return this;
         }
         public DefaultSessionBuilder eventDispatcher(final DispatchHandler eventDispatcher)
@@ -169,13 +192,13 @@ public class SipSession implements Session {
     }
 
     @Override
-    public void setCtx(ChannelHandlerContext ctx) {
-
+    public void setCtx(Channel ctx) {
+        this.ctx=ctx;
     }
 
     @Override
-    public ChannelHandlerContext getCtx() {
-        return null;
+    public Channel getCtx() {
+        return this.ctx;
     }
 
     public SipContactAOR getSipContactAOR() {
@@ -196,5 +219,17 @@ public class SipSession implements Session {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public InetSocketAddress getDeviceAddress() {
+        return deviceAddress;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
